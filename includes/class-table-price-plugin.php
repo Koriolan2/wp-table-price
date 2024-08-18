@@ -79,7 +79,7 @@ class TablePricePlugin {
         global $wpdb;
         $atts = shortcode_atts(array('id' => ''), $atts);
         $query_id = intval($atts['id']);
-        $query = get_option('table_price_query_' . $query_id);
+        $query = get_post_meta($query_id, '_table_price_query', true);
 
         if (!$query) {
             return "Invalid query ID.";
