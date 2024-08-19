@@ -9,6 +9,10 @@ class TablePriceAdmin {
         add_filter('the_title', array($this, 'filter_title'), 10, 2);
         add_action('admin_footer', array($this, 'hide_title_input'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
+        add_filter('manage_edit-table_price_query_columns', array($this, 'set_custom_columns'));
+        add_filter('manage_table_price_query_posts_custom_column', array($this, 'custom_column'), 10, 2);
+        add_filter('manage_edit-table_price_query_sortable_columns', array($this, 'set_sortable_columns'));
+        add_filter('default_hidden_columns', array($this, 'hide_default_columns'), 10, 2);
     }
 
     // Register custom post type
@@ -29,7 +33,7 @@ class TablePriceAdmin {
             'public' => true,
             'has_archive' => true,
             'menu_position' => 20,
-            'supports' => array('title'),
+            'supports' => array('title', 'author'),
             'show_in_rest' => false,
         ));
     }
@@ -132,5 +136,44 @@ class TablePriceAdmin {
             wp_enqueue_style('custom-plugin-styles', plugin_dir_url(__FILE__) . 'custom-table-styles.css', array());
             wp_enqueue_script('custom-admin-scripts', plugin_dir_url(__FILE__) . 'custom-admin-scripts.js', array('jquery'), null, true);
         }
+    }
+
+    // Set custom columns for the Table Price Queries list table
+    public function set_custom_columns($columns) {
+        $new_columns = array(
+            'cb' => '<input type="checkbox" />',
+            'title' => 'Title',
+            'author' => 'Author',
+            'date' => 'Date'
+        );
+        return $new_columns;
+    }
+
+    // Populate custom columns for the Table Price Queries list table
+    public function custom_column($column, $post_id) {
+        // No need to do anything here since the default columns are handled by WordPress
+    }
+
+    // Set sortable columns
+    public function set_sortable_columns($columns) {
+        $columns['title'] = 'title';
+        $columns['author'] = 'author';
+        $columns['date'] = 'date';
+        return $columns;
+    }
+
+    // Hide default columns
+    public function hide_default_columns($hidden, $screen) {
+        if ($screen->post_type === 'table_price_query') {
+            $hidden[] = 'wpseo-score'; // Yoast SEO Score
+            $hidden[] = 'wpseo-score-readability'; // Yoast SEO Readability Score
+            $hidden[] = 'wpseo-title'; // Yoast SEO Title
+            $hidden[] = 'wpseo-metadesc'; // Yoast SEO Meta Description
+            $hidden[] = 'wpseo-focuskw'; // Yoast SEO Focus Keyword
+            $hidden[] = 'wpseo-links'; // Yoast SEO Links
+            $hidden[] = 'wpseo-linked'; // Yoast SEO Linked
+            $hidden[] = 'sidebars'; // Custom Sidebars
+        }
+        return $hidden;
     }
 }
