@@ -8,6 +8,7 @@ class TablePriceAdmin {
         add_action('save_post', array($this, 'save_post'));
         add_filter('the_title', array($this, 'filter_title'), 10, 2);
         add_action('admin_footer', array($this, 'hide_title_input'));
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
     }
 
     // Register custom post type
@@ -38,19 +39,42 @@ class TablePriceAdmin {
         add_meta_box(
             'table_price_query_meta_box',
             'SQL Query',
-            array($this, 'render_meta_box'),
+            array($this, 'render_query_meta_box'),
             'table_price_query',
             'normal',
             'high'
         );
+
+        add_meta_box(
+            'table_price_settings_meta_box',
+            'DataTable Settings',
+            array($this, 'render_settings_meta_box'),
+            'table_price_query',
+            'side',
+            'default'
+        );
     }
 
-    // Render meta box
-    public function render_meta_box($post) {
+    // Render query meta box
+    public function render_query_meta_box($post) {
         wp_nonce_field('save_table_price_query', 'table_price_query_nonce');
         $query = get_post_meta($post->ID, '_table_price_query', true);
         echo '<textarea name="table_price_query" class="large-text code" rows="10">' . esc_textarea($query) . '</textarea>';
         echo '<p>Shortcode: [table_price id="' . esc_html($post->ID) . '"]</p>';
+    }
+
+    // Render settings meta box
+    public function render_settings_meta_box($post) {
+        $settings = get_post_meta($post->ID, '_table_price_settings', true);
+        $ordering = isset($settings['ordering']) ? $settings['ordering'] : 1;
+        $paging = isset($settings['paging']) ? $settings['paging'] : 1;
+        $searching = isset($settings['searching']) ? $settings['searching'] : 1;
+        $pageLength = isset($settings['pageLength']) ? $settings['pageLength'] : 25;
+
+        echo '<p><label><input type="checkbox" id="table_price_settings_ordering" name="table_price_settings[ordering]" value="1"' . checked(1, $ordering, false) . '> Enable Column Sorting</label></p>';
+        echo '<p><label><input type="checkbox" id="table_price_settings_paging" name="table_price_settings[paging]" value="1"' . checked(1, $paging, false) . '> Enable Pagination</label></p>';
+        echo '<p id="rows_per_page_wrapper" style="' . ($paging ? '' : 'display: none;') . '"><label>Rows per Page: <input type="number" id="table_price_settings_pageLength" name="table_price_settings[pageLength]" value="' . esc_attr($pageLength) . '" class="small-text"></label></p>';
+        echo '<p><label><input type="checkbox" id="table_price_settings_searching" name="table_price_settings[searching]" value="1"' . checked(1, $searching, false) . '> Enable Search</label></p>';
     }
 
     // Save post
@@ -77,6 +101,11 @@ class TablePriceAdmin {
             ));
             add_action('save_post', array($this, 'save_post'));
         }
+
+        if (isset($_POST['table_price_settings'])) {
+            $settings = wp_unslash($_POST['table_price_settings']);
+            update_post_meta($post_id, '_table_price_settings', $settings);
+        }
     }
 
     // Filter the title
@@ -93,6 +122,15 @@ class TablePriceAdmin {
         global $post_type;
         if ($post_type == 'table_price_query') {
             echo '<style>#titlediv { display: none; }</style>';
+        }
+    }
+
+    // Enqueue admin scripts and styles
+    public function enqueue_admin_scripts($hook_suffix) {
+        global $post_type;
+        if ($post_type == 'table_price_query') {
+            wp_enqueue_style('custom-plugin-styles', plugin_dir_url(__FILE__) . 'custom-table-styles.css', array());
+            wp_enqueue_script('custom-admin-scripts', plugin_dir_url(__FILE__) . 'custom-admin-scripts.js', array('jquery'), null, true);
         }
     }
 }
