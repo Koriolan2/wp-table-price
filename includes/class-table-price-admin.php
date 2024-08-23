@@ -86,6 +86,7 @@ class TablePriceAdmin {
     }
     
     
+    
 
     // Save post
     public function save_post($post_id) {
