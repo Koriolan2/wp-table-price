@@ -14,7 +14,7 @@ class TablePricePlugin {
     public function enqueue_scripts() {
         wp_enqueue_style('datatables-css', 'https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css');
         wp_enqueue_script('datatables-js', 'https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js', array('jquery'), null, true);
-        wp_enqueue_style('custom-plugin-styles', plugin_dir_url(__FILE__) . 'custom-table-styles.css', array());
+        wp_enqueue_style('custom-plugin-styles', plugin_dir_url(__FILE__) . 'assets/css/custom-styles.css', array(), time());        
     }
 
     // Function for creating an HTML table with data from a database

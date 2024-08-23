@@ -7,26 +7,50 @@ jQuery(document).ready(function($) {
         }
     });
 });
-
 jQuery(document).ready(function($) {
+    /**
+     * Функція для копіювання тексту в буфер обміну.
+     * @param {string} text - Текст, який потрібно скопіювати.
+     * @param {object} buttonElement - Елемент кнопки, текст якої оновлюватиметься.
+     */
+    function copyToClipboard(text, buttonElement) {
+        navigator.clipboard.writeText(text).then(function() {
+            // Оновлюємо текст кнопки після успішного копіювання
+            $(buttonElement).text('Copied!');
+            setTimeout(function() {
+                $(buttonElement).text('Copy');
+            }, 2000); // Повертаємо текст кнопки назад через 2 секунди
+        }).catch(function(error) {
+            console.error('Failed to copy text: ', error);
+        });
+    }
+
+    /**
+     * Обробник для кнопки копіювання в метабоксі.
+     */
     $('#copy_shortcode_button').on('click', function() {
-        // Створюємо тимчасове текстове поле для копіювання
-        var tempInput = document.createElement('input');
-        tempInput.value = $('#table_price_shortcode').val();
-        document.body.appendChild(tempInput);
+        var shortcodeField = $('#table_price_shortcode').val();
+        copyToClipboard(shortcodeField, this); // Використовуємо загальну функцію копіювання
+    });
 
-        // Вибираємо текст і копіюємо його в буфер обміну
-        tempInput.select();
-        tempInput.setSelectionRange(0, 99999); // Для мобільних пристроїв
-        document.execCommand('copy');
-        document.body.removeChild(tempInput); // Видаляємо тимчасовий елемент
+    /**
+     * Делегований обробник для кнопок копіювання в таблиці.
+     */
+    $(document).on('click', '.copy_shortcode_button', function() {
+        // Отримуємо значення шорткоду з сусіднього поля input
+        var shortcodeField = $(this).prev('input').val();
+        copyToClipboard(shortcodeField, this); // Використовуємо загальну функцію копіювання
+    });
 
-        // Оновлюємо текст кнопки після копіювання
-        $('#copy_shortcode_button').text('Copied!');
-        setTimeout(function() {
-            $('#copy_shortcode_button').text('Copy');
-        }, 2000); // Повертаємо текст кнопки назад через 2 секунди
+    /**
+     * Обробник для відображення поля "Rows per Page" в налаштуваннях DataTable.
+     * Поле показується тільки якщо увімкнено пагінацію.
+     */
+    $('#table_price_settings_paging').on('change', function() {
+        if ($(this).is(':checked')) {
+            $('#rows_per_page_wrapper').show();
+        } else {
+            $('#rows_per_page_wrapper').hide();
+        }
     });
 });
-
-
