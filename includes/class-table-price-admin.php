@@ -69,48 +69,67 @@ class TablePriceAdmin {
 
     // Render settings meta box
     public function render_settings_meta_box($post) {
+        // Отримання збережених налаштувань
         $settings = get_post_meta($post->ID, '_table_price_settings', true);
-        $ordering = isset($settings['ordering']) ? $settings['ordering'] : 1;
-        $paging = isset($settings['paging']) ? $settings['paging'] : 1;
-        $searching = isset($settings['searching']) ? $settings['searching'] : 1;
-        $pageLength = isset($settings['pageLength']) ? $settings['pageLength'] : 25;
-
+        
+        // Якщо налаштування відсутні, встановлюємо значення за замовчуванням
+        $ordering = isset($settings['ordering']) ? (bool) $settings['ordering'] : true;  
+        $paging = isset($settings['paging']) ? (bool) $settings['paging'] : true;       
+        $searching = isset($settings['searching']) ? (bool) $settings['searching'] : true;
+        $pageLength = isset($settings['pageLength']) ? intval($settings['pageLength']) : 25;
+    
+        // Виведення елементів управління з використанням збережених значень
         echo '<p><label><input type="checkbox" id="table_price_settings_ordering" name="table_price_settings[ordering]" value="1"' . checked(1, $ordering, false) . '> Enable Column Sorting</label></p>';
         echo '<p><label><input type="checkbox" id="table_price_settings_paging" name="table_price_settings[paging]" value="1"' . checked(1, $paging, false) . '> Enable Pagination</label></p>';
         echo '<p id="rows_per_page_wrapper" style="' . ($paging ? '' : 'display: none;') . '"><label>Rows per Page: <input type="number" id="table_price_settings_pageLength" name="table_price_settings[pageLength]" value="' . esc_attr($pageLength) . '" class="small-text"></label></p>';
         echo '<p><label><input type="checkbox" id="table_price_settings_searching" name="table_price_settings[searching]" value="1"' . checked(1, $searching, false) . '> Enable Search</label></p>';
     }
+    
+    
 
     // Save post
     public function save_post($post_id) {
+        // Перевірка nonce
         if (!isset($_POST['table_price_query_nonce']) || !wp_verify_nonce($_POST['table_price_query_nonce'], 'save_table_price_query')) {
             return;
         }
-
+    
+        // Перевірка автозбереження
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
             return;
         }
-
+    
+        // Перевірка прав користувача
         if (!current_user_can('edit_post', $post_id)) {
             return;
         }
-
+    
+        // Збереження SQL-запиту
         if (isset($_POST['table_price_query'])) {
-            $query = wp_unslash($_POST['table_price_query']);
+            $query = sanitize_text_field(wp_unslash($_POST['table_price_query']));
             update_post_meta($post_id, '_table_price_query', $query);
-            remove_action('save_post', array($this, 'save_post')); // Avoid infinite loop
+            remove_action('save_post', array($this, 'save_post')); // Запобігання циклу
             wp_update_post(array(
                 'ID' => $post_id,
                 'post_title' => '[table_price id="' . $post_id . '"]'
             ));
             add_action('save_post', array($this, 'save_post'));
         }
-
+    
+        // Збереження налаштувань DataTable
         if (isset($_POST['table_price_settings'])) {
-            $settings = wp_unslash($_POST['table_price_settings']);
+            $settings = array(
+                'ordering' => isset($_POST['table_price_settings']['ordering']) ? 1 : 0,
+                'paging' => isset($_POST['table_price_settings']['paging']) ? 1 : 0,
+                'searching' => isset($_POST['table_price_settings']['searching']) ? 1 : 0,
+                'pageLength' => isset($_POST['table_price_settings']['pageLength']) ? intval($_POST['table_price_settings']['pageLength']) : 25
+            );
+    
+            // Збереження налаштувань
             update_post_meta($post_id, '_table_price_settings', $settings);
         }
     }
+    
 
     // Filter the title
     public function filter_title($title, $post_id) {

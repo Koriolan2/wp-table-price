@@ -1,0 +1,9 @@
+/*  */
+.custom-datatable .dataTables_wrapper .dataTables_filter, .custom-datatable .dataTables_wrapper .dataTables_length{
+	/* display: none; */
+}
+.custom-datatable .dataTables_wrapper .dataTable tbody>tr>td {
+	white-space: nowrap;
+	font-size: 11px;
+	padding: 8px 0px;
+}
