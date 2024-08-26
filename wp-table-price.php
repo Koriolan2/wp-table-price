@@ -2,7 +2,7 @@
 /*
 Plugin Name: WP Table Price Plugin
 Description: A plugin for displaying data from custom database queries in merged HTML tables. WARNING! To work, you need the Access level plugin, which determines the level of access of users.
-Version: 2.5
+Version: 2.5.1
 Author: Yuriy Kozmin aka Yuriy Knysh 
 Author Email: koriolan2@gmail.com 
 License: GPL2

@@ -88,3 +88,5 @@ class TablePriceAdmin {
     
 }
 
+add_action('admin_enqueue_scripts', 'enqueue_admin_scripts'); // Пріоритет 999, щоб завантажити пізніше за інші
+

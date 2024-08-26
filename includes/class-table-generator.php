@@ -45,10 +45,6 @@ class TableGenerator {
         return "<script>
             jQuery(document).ready(function($) {
                 $('#table_price').DataTable({
-                    order: [
-                        [0, 'asc'],
-                        [1, 'asc']
-                    ],
                     paging: $paging,
                     pageLength: $pageLength,
                     searching: $searching,
