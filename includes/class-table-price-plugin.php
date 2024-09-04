@@ -35,14 +35,23 @@ class TablePricePlugin {
         if (!$results) {
             return "Query execution failed: " . $wpdb->last_error;
         }
-        $columns = array_keys((array)$wpdb->get_row($query, ARRAY_A));
-        $userRole = $this->tableGenerator->get_user_access_level();
-        $settings = get_post_meta($query_id, '_table_price_settings', true);
 
-        if ($results) {
-            return $this->tableGenerator->generate_table($results, $columns, $userRole, $settings);
-        } else {
-            return "No results found.";
+        // Декодуємо спецсимволи в результатах
+        foreach ($results as $key => $row) {
+            foreach ($row as $field => $value) {
+                $results[$key]->$field = utf8_decode($value); // Або html_entity_decode($value)
+            }
         }
+
+    $columns = array_keys((array)$wpdb->get_row($query, ARRAY_A));
+    $userRole = $this->tableGenerator->get_user_access_level();
+    $settings = get_post_meta($query_id, '_table_price_settings', true);
+
+    if ($results) {
+        return $this->tableGenerator->generate_table($results, $columns, $userRole, $settings);
+    } else {
+        return "No results found.";
     }
+}
+
 }
